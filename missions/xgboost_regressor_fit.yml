@@ -1,0 +1,14 @@
+meta:
+  name: xgboost_regressor_fit
+  version: 1
+
+operators:
+  - name: fit_a
+    class: XGBoostRegressorFit
+    class_path: "petml.operators.boosting"
+    party: party_a
+
+  - name: fit_b
+    class: XGBoostRegressorFit
+    class_path: "petml.operators.boosting"
+    party: party_b

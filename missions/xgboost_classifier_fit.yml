@@ -1,0 +1,14 @@
+meta:
+  name: xgboost_classifier_fit
+  version: 1
+
+operators:
+  - name: fit_a
+    class: XGBoostClassifierFit
+    class_path: "petml.operators.boosting"
+    party: party_a
+
+  - name: fit_b
+    class: XGBoostClassifierFit
+    class_path: "petml.operators.boosting"
+    party: party_b

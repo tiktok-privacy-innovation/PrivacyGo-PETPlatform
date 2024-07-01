@@ -1,0 +1,14 @@
+meta:
+  name: psi
+  version: 1
+
+operators:
+  - name: psi_a
+    class: PSITransform
+    class_path: "petml.operators.preprocessing"
+    party: party_a
+
+  - name: psi_b
+    class: PSITransform
+    class_path: "petml.operators.preprocessing"
+    party: party_b

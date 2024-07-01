@@ -1,0 +1,22 @@
+{
+  "party_a": {
+    "petplatform": {
+      "type": 1,
+      "url":"http://127.0.0.1:1234"
+    },
+    "petnet": [{
+      "type": 1,
+      "url":"127.0.0.1:1235"
+    }]
+  },
+  "party_b": {
+    "petplatform": {
+      "type": 1,
+      "url":"http://127.0.0.2:1234"
+    },
+    "petnet": [{
+      "type": 1,
+      "url":"127.0.0.2:1235"
+    }]
+  }
+}

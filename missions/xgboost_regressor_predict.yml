@@ -1,0 +1,14 @@
+meta:
+  name: xgboost_regressor_predict
+  version: 1
+
+operators:
+  - name: predict_a
+    class: XGBoostRegressorPredict
+    class_path: "petml.operators.boosting"
+    party: party_a
+
+  - name: predict_b
+    class: XGBoostRegressorPredict
+    class_path: "petml.operators.boosting"
+    party: party_b

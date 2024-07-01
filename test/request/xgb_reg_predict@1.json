@@ -1,0 +1,24 @@
+{
+    "mission_name": "xgboost_regressor_predict",
+    "mission_version": 1,
+    "mission_params": {
+            "party_a": {
+                "inputs": {
+                    "predict_data": "data/students_reg_mini_server.csv",
+                    "model_path": "data/test_reg_xgb_server.pkl"
+                },
+                "outputs": {
+                    "inference_res_path": "data/output/result_reg_predict_server.csv"
+                }
+            },
+            "party_b": {
+                "inputs": {
+                    "predict_data": "data/students_reg_mini_client.csv",
+                    "model_path": "data/test_reg_xgb_client.pkl"
+                },
+                "outputs": {
+                    "inference_res_path": "data/output/result_reg_predict_client.csv"
+                }
+            }
+    }
+}

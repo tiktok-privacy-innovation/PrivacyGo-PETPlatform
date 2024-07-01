@@ -1,0 +1,14 @@
+meta:
+  name: xgboost_classifier_predict
+  version: 1
+
+operators:
+  - name: predict_a
+    class: XGBoostClassifierPredict
+    class_path: "petml.operators.boosting"
+    party: party_a
+
+  - name: predict_b
+    class: XGBoostClassifierPredict
+    class_path: "petml.operators.boosting"
+    party: party_b

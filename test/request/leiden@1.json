@@ -1,0 +1,26 @@
+{
+    "mission_name": "leiden",
+    "mission_version": 1,
+    "mission_params": {
+        "max_move": 20,
+        "max_merge": 10,
+        "party_a": {
+            "inputs": {
+                "user_weights": "data/karate_club_user_weight1.json",
+                "local_nodes": "data/karate_club_local_nodes1.json"
+            },
+            "outputs": {
+                "cluster": "data/leiden_result_a.csv"
+            }
+        },
+        "party_b": {
+            "inputs": {
+                "user_weights": "data/karate_club_user_weight2.json",
+                "local_nodes": "data/karate_club_local_nodes2.json"
+            },
+            "outputs": {
+                "cluster": "data/leiden_result_b"
+            }
+        }
+    }
+}

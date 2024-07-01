@@ -1,0 +1,24 @@
+{
+    "mission_name": "psi",
+    "mission_version": 1,
+    "mission_params": {
+        "party_a": {
+            "column_name": "id",
+            "inputs": {
+                "data": "data/breast_hetero_mini_server.csv"
+            },
+            "outputs": {
+                "data": "data/psi_result.csv"
+            }
+        },
+        "party_b": {
+            "column_name": "id",
+            "inputs": {
+                "data": "data/breast_hetero_mini_client.csv"
+            },
+            "outputs": {
+                "data": "data/psi_result.csv"
+            }
+        }
+    }
+}

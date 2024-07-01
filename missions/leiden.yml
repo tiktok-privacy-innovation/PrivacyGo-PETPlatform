@@ -1,0 +1,14 @@
+meta:
+  name: leiden
+  version: 1
+
+operators:
+  - name: leiden_a
+    class: LeidenTransform
+    class_path: "petml.operators.graph"
+    party: party_a
+
+  - name: leiden_b
+    class: LeidenTransform
+    class_path: "petml.operators.graph"
+    party: party_b

@@ -1,0 +1,93 @@
+{
+    "mission_name": "sql",
+    "mission_version": 1,
+    "mission_params": {
+        "sql": "SELECT b.f3 as f3, sum(b.f1) as count_f, sum(b.f1 * b.f1 + a.f1 - a.f1 / b.f1) AS sum_f, sum(b.f1 * a.f1 + 1) as sum_f2 FROM (select id1, id2, f1 from table_from_a where f1 < 90) AS a JOIN (select id1, id2, f1 + f2 + 2.01 as f1, f1 * f2 + 1 as f2, f3 from table_from_b) AS b ON a.id1 = b.id1 GROUP BY b.f3",
+        "config": {
+            "mode": "memory",
+            "schemas": [
+                {
+                    "name": "table_from_a",
+                    "columns": [
+                        {
+                            "name": "id1",
+                            "type": 2,
+                            "party": 0
+                        },
+                        {
+                            "name": "id2",
+                            "type": 2,
+                            "party": 0
+                        },
+                        {
+                            "name": "f1",
+                            "type": 3,
+                            "party": 0
+                        }
+                    ],
+                    "party": 0
+                },
+                {
+                    "name": "table_from_b",
+                    "columns": [
+                        {
+                            "name": "id1",
+                            "type": 2,
+                            "party": 1
+                        },
+                        {
+                            "name": "id2",
+                            "type": 2,
+                            "party": 1
+                        },
+                        {
+                            "name": "f1",
+                            "type": 3,
+                            "party": 1
+                        },
+                        {
+                            "name": "f2",
+                            "type": 3,
+                            "party": 1
+                        },
+                        {
+                            "name": "f3",
+                            "type": 2,
+                            "party": 1
+                        }
+                    ],
+                    "party": 1
+                }
+            ],
+            "table_url": {
+                "table_from_a": "data/table_from_a.csv",
+                "table_from_b": "data/table_from_b.csv"
+            },
+            "engine_url": "memory:///",
+            "reveal_to": 0,
+            "task_id": "test_task_id"
+        },
+        "party_a": {
+            "inputs": {
+                "data": [
+                    "data/table_from_a.csv"
+                ]
+            },
+            "outputs": {
+                "data": [
+                    "data/sql_result.csv"
+                ]
+            }
+        },
+        "party_b": {
+            "inputs": {
+                "data": [
+                    "data/table_from_b.csv"
+                ]
+            },
+            "outputs": {
+                "data": []
+            }
+        }
+    }
+}

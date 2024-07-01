@@ -1,0 +1,14 @@
+meta:
+  name: sql
+  version: 1
+
+operators:
+  - name: sql_a
+    class: PETSQL
+    class_path: "petsql.operators"
+    party: party_a
+
+  - name: sql_b
+    class: PETSQL
+    class_path: "petsql.operators"
+    party: party_b

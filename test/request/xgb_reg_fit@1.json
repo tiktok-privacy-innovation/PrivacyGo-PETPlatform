@@ -1,0 +1,31 @@
+{
+    "mission_name": "xgboost_regressor_fit",
+    "mission_version": 1,
+    "mission_params": {
+        "objective:": "squarederror",
+        "n_estimators": 2,
+        "max_depth": 2,
+        "reg_lambda": 1,
+        "reg_alpha": 0,
+        "base_score": 0.5,
+        "learning_rate": 0.1,
+        "min_child_weight": 1,
+        "test_size": 0,
+        "party_a": {
+            "inputs": {
+                "train_data": "data/students_reg_mini_server.csv"
+            },
+            "outputs": {
+                "model_path": "data/test_reg_xgb_server.pkl"
+            }
+        },
+        "party_b": {
+            "inputs": {
+                "train_data": "data/students_reg_mini_client.csv"
+            },
+            "outputs": {
+                "model_path": "data/test_reg_xgb_client.pkl"
+            }
+        }
+    }
+}

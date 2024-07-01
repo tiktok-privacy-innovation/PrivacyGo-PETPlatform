@@ -1,0 +1,45 @@
+# Copyright 2024 TikTok Pte. Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from models.base import Base
+import settings
+
+# init db
+db = SQLAlchemy(model_class=Base)
+
+
+def get_engine(db_uri=None, create_tables=False):
+    db_uri = db_uri or settings.PLATFORM_DB_URI
+    engine = create_engine(db_uri)
+    if create_tables:
+        Base.metadata.create_all(engine)
+    return engine
+
+
+def get_session_cls(db_uri=None, create_tables=False):
+    engine = get_engine(db_uri, create_tables)
+    return sessionmaker(bind=engine)
+
+
+def get_session_ins(db_uri=None, create_tables=False):
+    engine = get_engine(db_uri, create_tables)
+    return sessionmaker(bind=engine)()
+
+
+def get_flask_session():
+    return db.session
