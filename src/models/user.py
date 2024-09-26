@@ -13,20 +13,43 @@
 # limitations under the License.
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
+from sqlalchemy import Column, String, DateTime
 
 from .base import Base, BigIntOrInteger
 
 
-class Mission(Base):
-    __tablename__ = "privacy_platform_mission"
+class Status:
+    normal = "Normal"
+    revoked = "Revoked"
+
+
+class Role:
+    operator = "Operator"
+    node = "Node"
+    admin = "Admin"
+
+    _roles = [operator, node, admin]
+
+    @classmethod
+    def validate(cls, role: str):
+        if role.upper() not in cls._roles:
+            raise ValueError(f"invalid user role {role}")
+        return role.upper()
+
+
+class User(Base):
+    __tablename__ = "privacy_platform_user"
 
     id = Column(BigIntOrInteger, primary_key=True)
-    name = Column(String(80), nullable=False)
-    version = Column(Integer, nullable=False)
-    dag = Column(Text, nullable=False)
+    name = Column(String(80), unique=True, nullable=False)
+    status = Column(String(80), default=Status.normal, nullable=False)
+    role = Column(String(80), nullable=False)
 
     create_time = Column(DateTime, default=datetime.utcnow)  # create_time field
     update_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (UniqueConstraint('name', 'version', name='uix_1'),)
+    def to_dict(self):
+        return {"name": self.name, "status": self.status, "role": self.role}
+
+    def validate(self):
+        return self.status == Status.normal

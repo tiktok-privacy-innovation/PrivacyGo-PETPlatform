@@ -24,13 +24,16 @@ from utils.deep_merge import deep_merge
 
 class JobContext:
 
-    def __init__(self, session, job_id: str):
-        self.session = session
+    def __init__(self, job_id: str):
+        from extensions import get_session_maker
+        self.session_maker = get_session_maker()
         self.job_id = job_id
 
     def get(self, key: str, party: str = None) -> Union[str, Dict, None]:
-        job = self.session.query(Job).filter_by(job_id=self.job_id).first()
-        assert job is not None, ValueError(f"{self.job_id} not found")
+        with self.session_maker() as session:
+            job = session.query(Job).filter_by(job_id=self.job_id).first()
+            if job is None:
+                raise ValueError(f"{self.job_id} not found")
         context: Dict = json.loads(job.job_context)
         # select search domain
         search_domain = [settings.PARTY, "common"] if party is None else [party]
@@ -52,52 +55,43 @@ class JobContext:
         return None
 
     def set(self, key: str, value: Union[str, Dict, List], party: str, max_retry=3) -> bool:
-        keys, updated_context = key.split("."), {party: {}}
-        cursor = updated_context[party]
-        for k in keys[:-1]:
-            cursor[k] = {}
-            cursor = cursor[k]
-        cursor[keys[-1]] = value
-        for _ in range(max_retry):
-            job = self.session.query(Job).filter_by(job_id=self.job_id).first()
-            assert job is not None, ValueError(f"{self.job_id} not found")
-            job_context: Dict = json.loads(job.job_context)
-            assert party in job_context, ValueError(f"party {party} not found")
-            assert isinstance(job_context[party], dict), ValueError(f"job_context[{party}] is not a dict")
-            deep_merge(job_context, updated_context)
-            job.job_context = json.dumps(job_context)
-            try:
-                session_commit_with_retry(self.session)
-                return True
-            except StaleDataError:
-                # This happens when two jobs try to modify the same record,
-                # this modification fails due to the optimistic lock.
-                # Retry until reach max retry times.
-                self.session.rollback()
-                continue
-        return False
-
-    def get_all(self) -> Dict:
-        job = self.session.query(Job).filter_by(job_id=self.job_id).first()
-        assert job is not None, ValueError(f"{self.job_id} not found")
-        context: Dict = json.loads(job.job_context)
-        return context
+        with self.session_maker() as session:
+            keys, updated_context = key.split("."), {party: {}}
+            cursor = updated_context[party]
+            for key in keys[:-1]:
+                cursor[key] = {}
+                cursor = cursor[key]
+            cursor[keys[-1]] = value
+            for i in range(max_retry):
+                job = session.query(Job).filter_by(job_id=self.job_id).first()
+                assert job is not None, ValueError(f"{self.job_id} not found")
+                job_context: Dict = json.loads(job.job_context)
+                assert party in job_context, ValueError(f"party {party} not found")
+                assert isinstance(job_context[party], dict), ValueError(f"job_context[{party}] is not a dict")
+                deep_merge(job_context, updated_context)
+                job.job_context = json.dumps(job_context)
+                try:
+                    session_commit_with_retry(session)
+                    return True
+                except StaleDataError:
+                    continue
+            return False
 
     def set_all(self, configs: Dict[str, Union[str, Dict, List]], party: str = "common", max_retry=3):
-        for k in configs:
-            assert "." not in k, ValueError(f"unexpected special character '.' in key {k}")
-        for _ in range(max_retry):
-            job = self.session.query(Job).filter_by(job_id=self.job_id).first()
-            assert job is not None, ValueError(f"{self.job_id} not found")
-            job_context: Dict = json.loads(job.job_context)
-            assert party in job_context, ValueError(f"party {party} not found")
-            assert isinstance(job_context[party], dict), ValueError(f"job_context[{party}] is not a dict")
-            deep_merge(job_context[party], configs)
-            job.job_context = json.dumps(job_context)
-            try:
-                session_commit_with_retry(self.session)
-                return True
-            except StaleDataError:
-                self.session.rollback()
-                continue
-        return False
+        with self.session_maker() as session:
+            for k in configs:
+                assert "." not in k, ValueError(f"unexpected special character '.' in key {k}")
+            for i in range(max_retry):
+                job = session.query(Job).filter_by(job_id=self.job_id).first()
+                assert job is not None, ValueError(f"{self.job_id} not found")
+                job_context: Dict = json.loads(job.job_context)
+                assert party in job_context, ValueError(f"party {party} not found")
+                assert isinstance(job_context[party], dict), ValueError(f"job_context[{party}] is not a dict")
+                deep_merge(job_context[party], configs)
+                job.job_context = json.dumps(job_context)
+                try:
+                    session_commit_with_retry(session)
+                    return True
+                except StaleDataError:
+                    continue
+            return False

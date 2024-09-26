@@ -23,39 +23,42 @@ from utils.db_utils import session_commit_with_retry
 
 class MissionContext:
 
-    def __init__(self, session, mission_name: str):
-        self.session = session
+    def __init__(self, mission_name: str):
+        from extensions import get_session_maker
+        self.session_maker = get_session_maker()
         self.mission_name = mission_name
 
     def get(self, key: str) -> Union[str, None]:
-        record = self.session.query(MissionContextTable).filter_by(config_key=key,
-                                                                   mission_name=self.mission_name).first()
-        if record is None:
-            return None
-        if record.expire_time < datetime.utcnow():
-            return None
-        return record.config_value
+        with self.session_maker() as session:
+            record = session.query(MissionContextTable).filter_by(config_key=key,
+                                                                  mission_name=self.mission_name).first()
+            if record is None:
+                return None
+            if record.expire_time < datetime.utcnow():
+                return None
+            return record.config_value
 
     def set(self, key: str, value: str, expire_time=TimeDuration.DAY) -> bool:
-        utcnow = datetime.utcnow()
-        new_expire_time = utcnow + timedelta(seconds=expire_time)
-        record = self.session.query(MissionContextTable).filter_by(config_key=key,
-                                                                   mission_name=self.mission_name).first()
-        if record is None:  # create
-            record = MissionContextTable(config_key=key,
-                                         mission_name=self.mission_name,
-                                         config_value=value,
-                                         expire_time=new_expire_time)
-            self.session.add(record)
-        else:  # update
-            record.config_value = value
-            record.expire_time = new_expire_time
-        try:
-            session_commit_with_retry(self.session)
-            return True
-        except StaleDataError:
-            # This happens when two jobs try to modify the same record,
-            # this modification fails due to the optimistic lock.
-            # We leave it the caller to handle, he may try to read it again.
-            self.session.rollback()
-            return False
+        with self.session_maker() as session:
+            utcnow = datetime.utcnow()
+            new_expire_time = utcnow + timedelta(seconds=expire_time)
+            record = session.query(MissionContextTable).filter_by(config_key=key,
+                                                                  mission_name=self.mission_name).first()
+            if record is None:  # create
+                record = MissionContextTable(config_key=key,
+                                             mission_name=self.mission_name,
+                                             config_value=value,
+                                             expire_time=new_expire_time)
+                session.add(record)
+            else:  # update
+                record.config_value = value
+                record.expire_time = new_expire_time
+            try:
+                session_commit_with_retry(session)
+                return True
+            except StaleDataError:
+                # This happens when two jobs try to modify the same record,
+                # this modification fails due to the optimistic lock.
+                # We leave it the caller to handle, he may try to read it again.
+                session.rollback()
+                return False

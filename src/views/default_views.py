@@ -19,23 +19,23 @@ from job_manager.core import JobManager
 import settings
 from utils.id_utils import generate_job_id
 
-views = Blueprint('default_views', __name__)
+default_views = Blueprint('default_views', __name__)
 
 
-@views.route("/")
+@default_views.route("/")
 def index_view():
     return jsonify({
         "message": f"{settings.PARTY} app server is running!",
     }), 200
 
 
-@views.route("/job/submit", methods=["POST"])
+@default_views.route("/job/submit", methods=["POST"])
 def submit_job():
     try:
         params = request.json
         job_id = params.get("job_id", generate_job_id())
         job_manager = JobManager(job_id)
-        job_manager.submit_job(params)
+        job_manager.submit(params)
 
         return jsonify({"success": True, "job_id": job_id}), 200
     except Exception as e:
@@ -43,21 +43,7 @@ def submit_job():
         return jsonify({"success": False, "error_message": str(e)}), 500
 
 
-@views.route("/job/kill", methods=["POST"])
-def kill_job():
-    try:
-        params = request.json
-        job_id = params["job_id"]
-        job_manager = JobManager(job_id)
-        job_manager.kill()
-
-        return jsonify({"success": True}), 200
-    except Exception as e:
-        logging.exception(f"submit job error: {e}")
-        return jsonify({"success": False, "error_message": str(e)}), 500
-
-
-@views.route("/job/rerun", methods=["POST"])
+@default_views.route("/job/rerun", methods=["POST"])
 def rerun_job():
     try:
         params = request.json
@@ -71,20 +57,34 @@ def rerun_job():
         return jsonify({"success": False, "error_message": str(e)}), 500
 
 
-@views.route("/job/status", methods=["GET"])
+@default_views.route("/job/kill", methods=["POST"])
+def kill_job():
+    try:
+        params = request.json
+        job_id = params["job_id"]
+        job_manager = JobManager(job_id)
+        job_manager.cancel()
+
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logging.exception(f"submit job error: {e}")
+        return jsonify({"success": False, "error_message": str(e)}), 500
+
+
+@default_views.route("/job/status", methods=["GET"])
 def get_status():
     try:
         params = request.args
         job_id = params["job_id"]
         job_manager = JobManager(job_id)
-        status = job_manager.get_status()
+        status = job_manager.get_job_details()
         return jsonify({"success": True, "status": status}), 200
     except Exception as e:
         logging.exception(f"get job status error: {e}")
         return jsonify({"success": False, "error_message": str(e)}), 500
 
 
-@views.route("/task/update", methods=["POST"])
+@default_views.route("/task/update", methods=["POST"])
 def update_task():
     try:
         params = request.json

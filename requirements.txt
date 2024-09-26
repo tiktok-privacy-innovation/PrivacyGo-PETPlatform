@@ -6,3 +6,4 @@ PyMySQL~=1.1.1
 PyYAML~=6.0.1
 requests~=2.32.0
 SQLAlchemy~=2.0.29
+setuptools>=73.0.1

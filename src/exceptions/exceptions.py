@@ -13,26 +13,27 @@
 # limitations under the License.
 
 
-class TimeDuration:
-    SECOND = 1
-    MINUTE = 60 * SECOND
-    HOUR = MINUTE * 60
-    DAY = 24 * HOUR
-    WEEK = 7 * DAY
-    MONTH = 30 * DAY
-    YEAR = 365 * DAY
+class BaseError(Exception):
+
+    def __init__(self, message, code=500):
+        super().__init__(message)
+        self.message = message
+        self.code = code
 
 
-class Status:
-    CANC = "CANCELED"
-    FAIL = "FAILED"
-    INIT = "INIT"
-    RUNN = "RUNNING"
-    SUCC = "SUCCESS"
+class ValidationError(BaseError):
 
-    status = [CANC, FAIL, INIT, RUNN, SUCC]
+    def __init__(self, message):
+        super().__init__(message, code=401)
 
-    @classmethod
-    def validate(cls, status: str):
-        assert status in status, ValueError(f"invalid status key {status}")
-        return status
+
+class AuthorizationError(BaseError):
+
+    def __init__(self, message):
+        super().__init__(message, code=403)
+
+
+class NotFoundError(BaseError):
+
+    def __init__(self, message):
+        super().__init__(message)

@@ -198,83 +198,100 @@ docker-compose up -d
 
 ## User Manual
 
-### How to Submit a Job
+In version v0.1.0, task lifecycle management was managed via HTTP interface calls, requiring users to have specific background knowledge and input numerous parameters during operation. In the updated v0.1.1 version, we have introduced support for command-line interactive tools, added new interfaces, and optimized the output of some interfaces. These enhancements aim to improve user experience and facilitate better task management.
 
-First you need prepare your request parameters. Here is a template for running a psi job. You can find more templates in [mission_templates](test/request).
+### Installation
 
-```json
-{
-    "mission_name": "psi",
-    "mission_version": 1,
-    "mission_params": {
-        "party_a": {
-            "column_name": "id",
-            "inputs": {
-                "data": "data/breast_hetero_mini_server.csv"
-            },
-            "outputs": {
-                "data": "data/psi_result.csv"
-            }
-        },
-        "party_b": {
-            "column_name": "id",
-            "inputs": {
-                "data": "data/breast_hetero_mini_client.csv"
-            },
-            "outputs": {
-                "data": "data/psi_result.csv"
-            }
-        }
-    }
-}
-```
+| System    | Toolchain                 |
+|-----------|---------------------------|
+| Linux/Mac | Python 3.x, pip(>=23.3.1) |
 
-Then, you can submit a job by executing:
+### How to Install
+
+First you will need the wheel package of the petplatform client. Then you can install it with the following commands:
 
 ```bash
-curl http://${HOSTNAME}/job/submit -H 'Content-Type: application/json' -d@${PATH_TO_YOUR_CONFIG_FILE}
+# enter operating directory
+cd my_project
+# create python virtual environment
+python3 -m venv env
+# activate
+source env/bin/activate
+# pip install petplatform-cli
+pip install petplatform_client-0.1.0-py3-none-any.whl
 ```
 
-Normally you will receive a response like the following.
-You need to record your `job_id` for later to query the job status.
-
-```json
-{
-    "success": true,
-    "job_id": "job_id"
-}
+You can run the following command to check whether installation succeeded:
+```bash
+petplatform-cli
 ```
 
-### How to Query Job Status
+### Initialization
+We have added an authentication mechanism named JWT Token for better service quality and security. Users need to initialize the commandline tool before using it to manage their jobs. Run the following command:
+```bash
+petplatform-cli init
+```
+In the following interactions, users need to enter the platform's URL and their own JWT token.
 
-You can query job status by executing the following command. According to the job status, your response may look different.
+Notes:
+- Users only need to perform the initialization operation once. Once the user completes the input, the above configuration information will be saved to the .env file in the current directory. In subsequent uses, as long as the directory and .env file have not changed, users do not need to perform the initialization operation again.
+- If you need to change the configuration items, just re-execute the init command and input the new configuration items, the original configuration will be overwritten. You can also directly access the .env file to view and modify configuration items.
+- If the commandline tool is not correctly initialized, it might not work. Please contact us for technical support if you have any questions.
+
+### Job Management via Commandline Tool
+#### Get Help Message
+```bash
+# get commandlie tool help message
+petplatform-cli --help
+
+# get help message for subcommands
+petplatform-cli [subcommand name] --help
+```
+
+#### Submit a Job
 
 ```bash
-curl http://${HOSTNAME}/job/status?job_id=${YOUR_JOB_ID}
+# If your job parameters is a json file, e.g. /tmp/params.json
+petplatform-cli submit --json-file ${YOUR_JSON_FILE}
+
+# If your job parameters is a json string, e.g. {"mission_name": "psi"}
+petplatform-cli submit --json-string ${YOUR_JSON_STRING}
+```
+
+#### List History Jobs
+
+```bash
+# By default, jobs submited in the past 24 hours will be shown (10 at most)
+petplatform-cli get-jobs
+
+# Filter by job status, e.g. if you only want to see running jobs：
+petplatform-cli get-jobs --status RUNNING
+
+# Show earlier jobs, e.g. if you want to see successful jobs in the last 48 hours:
+petplatform-cli get-jobs --status SUCCESS --hours 48
+
+# Enlarge shown jobs number limitation, e.g. if you have 10-20 successful jobs and you want to show all:
+petplatform-cli get-jobs --status SUCCESS --hours 48 --limit 20
 ```
 
 
-### User APIs
+#### Show Single Job Details
 
-| Endpoint      | Method | Description             | Request Params                                                                                                                                                                           | Response                                                                                                                                                                       | Example                                                                    |
-|---------------|--------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| `/job/submit` | `POST` | Submit a computing job  | `mission_name`: (string) The name of the mission (e.g., "psi").<br>`mission_version`: (integer) The version of the mission.<br>`mission_params`: (object) The parameters of the mission. | Success: `success` (boolean), `job_id` (string)<br>Failure: `success` (boolean), `error_message` (string)                                                                      | `{ "mission_name": "psi", "mission_version": 1, "mission_params": {...} }` |
-| `/job/status` | `GET`  | Query job status        | `job_id`: (string) The ID of the job.                                                                                                                                                    | `status` (string): The status of the job ("RUNNING", "FAILED", "SUCCESS").<br>`progress` (string): The progress of the job.<br>`task_status` (object): The status of the task. | `{ "job_id": "xxx" }`                                                      |
-| `/job/kill`   | `POST` | Terminate a running job | `job_id`: (string) The ID of the job.                                                                                                                                                    | Success: `success` (boolean)<br>Failure: `success` (boolean), `error_message` (string)                                                                                         | `{ "job_id": "xxx" }`                                                      |
-| `/job/rerun`  | `POST` | Rerun a failed job      | `job_id`: (string) The ID of the job.                                                                                                                                                    | Success: `success` (boolean)<br>Failure: `success` (boolean), `error_message` (string)                                                                                         | `{ "job_id": "xxx" }`                                                      |
+```bash
+petplatform-cli get-job ${YOUR_JOB_ID}
+```
 
+#### Stop a Running Job
 
-### Trouble Shooting
+```bash
+petplatform-cli cancel ${YOUR_JOB_ID}
+```
 
-If you encounter problems while using the PETPlatform service, you can follow the steps below for self-check.
-If you still have more questions, you may report your bug to the community.
+Rerun a Failed/Cancaled Job
 
-1. Ensure that the PETPlatform Docker image you are using is up-to-date.
-2. Check if your configuration files (e.g., `party.json`) are correct. Ensure all keys and values are as expected, with no spelling errors or missing items.
-3. Check if your `docker-compose.yml` file is correct. Ensure all services, environment variables, volumes, and port mappings are configured correctly.
-4. Check if your containers are running.
-5. Refer to the error message for more details about the specific error.
-
+```bash
+petplatform-cli rerun ${YOUR_JOB_ID}
+```
 
 ## Contribution
 

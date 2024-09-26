@@ -11,9 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
-
-from extensions import get_session_ins
 from .global_config import GlobalConfig
 from .job_context import JobContext
 from .mission_context import MissionContext
@@ -41,36 +38,24 @@ class ConfigManager:
         self.mission_name = mission_name
         self.job_id = job_id
 
-        self._session = None
         self._global_config = None
         self._mission_context = None
         self._job_context = None
 
     @property
-    def session(self):
-        if self._session is None:
-            self._session = get_session_ins()
-        return self._session
-
-    @property
     def global_config(self):
         if self._global_config is None:
-            self._global_config = GlobalConfig(self.session)
+            self._global_config = GlobalConfig()
         return self._global_config
 
     @property
     def mission_context(self):
         if self._mission_context is None:
-            self._mission_context = MissionContext(self.session, self.mission_name)
+            self._mission_context = MissionContext(self.mission_name)
         return self._mission_context
 
     @property
     def job_context(self):
         if self._job_context is None:
-            self._job_context = JobContext(self.session, self.job_id)
+            self._job_context = JobContext(self.job_id)
         return self._job_context
-
-    def close(self):
-        if self._session:
-            self._session.close()
-        logging.info("config manager session closed")

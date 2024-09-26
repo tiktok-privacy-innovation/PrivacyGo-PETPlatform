@@ -35,19 +35,21 @@ class LogicTask:
 
 class DAG:
 
-    def __init__(self, session, job_id):
+    def __init__(self, job_id):
         self.mission_name = None
         self.mission_version = None
         self.job_id = job_id
-        self.session = session
         self._init_dag()
 
     def _init_dag(self):
-        job: "Job" = self.session.query(Job).filter_by(job_id=self.job_id).first()
-        self.mission_name, self.mission_version = job.mission_name, job.mission_version
-        mission: "Mission" = self.session.query(Mission).filter_by(name=self.mission_name,
-                                                                   version=self.mission_version).first()
-        tasks: List[Task] = self.session.query(Task).filter_by(job_id=self.job_id).all()
+        from extensions import get_session_maker
+        session_maker = get_session_maker()
+        with session_maker() as session:
+            job: "Job" = session.query(Job).filter_by(job_id=self.job_id).first()
+            self.mission_name, self.mission_version = job.mission_name, job.mission_version
+            mission: "Mission" = session.query(Mission).filter_by(name=self.mission_name,
+                                                                  version=self.mission_version).first()
+            tasks: List[Task] = session.query(Task).filter_by(job_id=self.job_id).all()
 
         dag: Dict = json.loads(mission.dag)
         self.tasks = {
@@ -55,7 +57,7 @@ class DAG:
                 LogicTask(v["name"], v["party"], v.get("args", {}), "", v.get("depends", []), v['class'],
                           v['class_path']) for v in dag["operators"]
         }
-        diff_set = {k for k in self.tasks.keys() if k not in {v.name for v in tasks}}
+        diff_set = set(self.tasks.keys()).difference(set([v.name for v in tasks]))
         assert len(diff_set) == 0, ValueError(f"task missed: {diff_set}")
 
         # update task status
@@ -90,10 +92,12 @@ class DAG:
         return running
 
     def judge_job_status(self) -> "Status":
-        num_init, num_running, num_success, num_failed = 0, 0, 0, 0
+        num_init, num_running, num_success, num_failed, num_canceled = 0, 0, 0, 0, 0
         for task in self.tasks.values():
-            if task.status in [Status.STOP, Status.FAIL]:
+            if task.status in [Status.FAIL]:
                 num_failed += 1
+            if task.status in [Status.CANC]:
+                num_canceled += 1
             if task.status in [Status.SUCC]:
                 num_success += 1
             if task.status in [Status.INIT]:
@@ -103,6 +107,8 @@ class DAG:
         if num_failed > 0:
             # some tasks failed or stopped
             return Status.FAIL
+        elif num_canceled > 0:
+            return Status.CANC
         elif num_success == len(self.tasks):
             # all tasks success
             return Status.SUCC

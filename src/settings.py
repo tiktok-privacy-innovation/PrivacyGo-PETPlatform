@@ -14,7 +14,7 @@
 import os
 import platform
 
-# --------------------------------------- Logging ---------------------------------------
+# ============================ LOGGING ===================================
 LOGGING_CONFIG = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -42,7 +42,10 @@ LOGGING_CONFIG = {
     }
 }
 
+# ========================= DB ======================================
 PLATFORM_DB_URI = os.environ.get("PLATFORM_DB_URI", "sqlite:////app/db/petplatform.db")
+
+# ========================= party ===================================
 PARTY: str = os.environ.get("PARTY")
 if PARTY is None:
     raise EnvironmentError("env PARTY not found")
@@ -52,3 +55,10 @@ SAFE_WORK_DIR = os.environ.get("SAFE_WORK_DIR", "/app/data/")
 NETWORK_SCHEME = os.environ.get("NETWORK_SCHEME", "agent")
 PORT_LOWER_BOUND = int(os.environ.get("PORT_LOWER_BOUND", "49152"))
 PORT_UPPER_BOUND = int(os.environ.get("PORT_UPPER_BOUND", "65535"))
+
+# ========================= validation ==============================
+SECRET = os.environ.get("SECRET")
+JWT_TOKEN = os.environ.get("JWT_TOKEN")
+
+# ========================= application =============================
+MAX_JOB_LIMIT = int(os.environ.get("MAX_JOB_LIMIT", "2"))

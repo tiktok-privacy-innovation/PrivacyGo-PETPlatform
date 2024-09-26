@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
-import time
 from typing import Dict
 
-import requests
-
-from .config import network_config
+import settings
+from network.config import network_config
+from utils.request_utils import post, patch
 
 
 class RequestManager:
@@ -25,50 +23,49 @@ class RequestManager:
     def __init__(self):
         self.party_address: Dict = network_config.party_config
 
-    def submit(self, party: str, params: Dict) -> bool:
-        return self._action(party=party, endpoint="job/submit", json=params)
+    def _get_address(self, party: str) -> str:
+        if party not in self.party_address:
+            raise ValueError(f"invalid party {party}")
+        return self.party_address.get(party)["address"]
 
-    def kill(self, party: str, params: Dict) -> bool:
-        return self._action(party=party, endpoint="job/kill", json=params)
+    def _get_headers(self, party: str) -> Dict:
+        if party not in self.party_address:
+            raise ValueError(f"invalid party {party}")
+        headers = {"Authorization": f"Bearer {settings.JWT_TOKEN}"}
+        headers.update(self.party_address[party].get("headers", {}))
+        return headers
 
-    def rerun(self, party: str, params: Dict) -> bool:
-        return self._action(party=party, endpoint="job/rerun", json=params)
+    def submit(self, party: str, params: Dict):
+        address = self._get_address(party)
+        headers = self._get_headers(party)
+        response = post(address, "api/v1/jobs", json=params, headers=headers)
+        if not response.get("success", False):
+            errors = response.get("error_message", "unknown errors")
+            raise Exception(f"bad request: {errors}")
 
-    def update_task(self, party, params: Dict):
-        return self._action(party, endpoint="task/update", json=params)
+    def rerun(self, party: str, job_id: str):
+        address = self._get_address(party)
+        headers = self._get_headers(party)
+        response = post(address, f"api/v1/jobs/{job_id}/rerun", headers=headers)
+        if not response.get("success", False):
+            errors = response.get("error_message", "unknown errors")
+            raise Exception(f"bad request: {errors}")
 
-    def _action(self, party: str, endpoint: str, json: Dict, max_retry: int = 3, timeout: int = 10) -> bool:
-        address = self.party_address.get(party)["petplatform"]["url"]
-        headers = self.party_address.get(party)["petplatform"].get("headers")
-        for i in range(max_retry):
-            try:
-                response = self._post(address, endpoint, json, headers=headers, timeout=timeout)
-                response.raise_for_status()
-                if response.status_code == 204:
-                    raise ConnectionError
-                response_data = response.json()
-                if not response_data['success']:
-                    raise Exception(response_data["error_message"])
-                return True
-            except Exception:
-                if i < max_retry - 1:
-                    sleep_time = 0.001 * (2**i)
-                    time.sleep(sleep_time)
-        raise Exception("request fail")
+    def cancel(self, party: str, job_id: str):
+        address = self._get_address(party)
+        headers = self._get_headers(party)
+        response = post(address, f"api/v1/jobs/{job_id}/cancel", headers=headers)
+        if not response.get("success", False):
+            errors = response.get("error_message", "unknown errors")
+            raise Exception(f"bad request: {errors}")
 
-    def _post(self, address: str, endpoint: str, json: Dict, data=None, headers=None, timeout=10):
-        url = f"{address}/{endpoint}"
-        post_headers = {"Content-Type": "application/json"}
-        if headers is not None:
-            post_headers.update(headers)
-        try:
-            logging.info(f"send post request to {url}, json={json}, data={data}, headers={headers}")
-            response = requests.post(url, json=json, data=data, headers=post_headers, timeout=timeout)
-            logging.info(f"response: {response.json()}")
-            return response
-        except Exception as e:
-            logging.exception(f"post fail: {address}/{endpoint}, headers={headers}, json={json}, data={data}")
-            raise e
+    def update_task(self, party, job_id: str, task_name: str, params: Dict):
+        address = self._get_address(party)
+        headers = self._get_headers(party)
+        response = patch(address, f"api/v1/tasks/{job_id}/{task_name}", json=params, headers=headers)
+        if not response.get("success", False):
+            errors = response.get("error_message", "unknown errors")
+            raise Exception(f"bad request: {errors}")
 
 
 request_manager = RequestManager()

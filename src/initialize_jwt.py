@@ -11,23 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging.config
+import secrets
 
-import flask
-from flask_sqlalchemy import SQLAlchemy
+import jwt
 
-from models.base import Base
-import settings
-from views.default_views import default_views
-from views.v1 import v1
 
-logging.config.dictConfig(settings.LOGGING_CONFIG)
-app = flask.Flask(__name__)
-app.register_blueprint(default_views)
-app.register_blueprint(v1)
-app.config['SQLALCHEMY_DATABASE_URI'] = settings.PLATFORM_DB_URI
-db = SQLAlchemy(app=app, model_class=Base)
+def generate_secret():
+    return secrets.token_hex(32)
+
+
+def generate_token(secret, payload, algorithm='HS256'):
+    return jwt.encode(payload, secret, algorithm)
+
 
 if __name__ == '__main__':
-    # Never run debug mode in production environment!
-    app.run(debug=False)
+    import os
+
+    # Generate a secure random string of 32 bytes
+    # jwt_secret = generate_secret()
+    # print(jwt_secret)
+
+    secret = os.environ.get('secret')
+    print(generate_token(secret, {'name': 'test_account_1'}))
+    print(generate_token(secret, {'name': 'cn_node_1'}))
+    print(generate_token(secret, {'name': 'va_node_1'}))
+
+    print(generate_token(secret, {'name': 'user_0'}))

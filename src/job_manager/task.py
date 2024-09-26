@@ -18,9 +18,8 @@ import time
 from typing import Dict
 
 from constants import Status
-from extensions import get_session_ins
 from job_manager.dag import LogicTask
-from network import network_config
+from network.config import network_config
 import settings
 from utils.deep_merge import deep_merge
 from utils.path_utils import traverse_and_validate
@@ -38,42 +37,40 @@ class TaskExecutor:
         self.args = task.args
         self.start_time = time.time()
 
-        from config.config_manager import ConfigManager
-        from job_manager.core import JobManager
-        self.config_manager = ConfigManager(mission_name=self.mission_name, job_id=self.job_id)
-        self.job_manager = JobManager(job_id=self.job_id, session=get_session_ins())
-
     def start(self):
-        success = False
+        from job_manager.core import JobManager
+        from config.config_manager import ConfigManager
+        config_manager = ConfigManager(mission_name=self.mission_name, job_id=self.job_id)
+        job_manager = JobManager(job_id=self.job_id)
+        success, errors = False, None
         try:
-            # load operator class
+            job_manager.update_task(self.task_name, Status.RUNN)
             operator_class = self._load_class()
-            # prepare params
-            configmap = self._parse_configmap()
-            parsed_args: Dict = self._parse_args()
-            operator = operator_class(party=self.party, config_manager=self.config_manager, **parsed_args)
-            # run operator
-            logging.info(f"start {self.job_id}.{self.task_name}, configmap: {configmap}, args: {parsed_args}")
+            assert operator_class, RuntimeError(f"fail to load operator {self.class_name} from {self.class_path}")
+            configmap = self._parse_configmap(config_manager)
+            args_value_map: Dict = self._parse_args(config_manager=config_manager)
+            logging.info(f"ready to execute {self.job_id}.{self.task_name}, args: {args_value_map}")
+            operator = operator_class(party=self.party, config_manager=config_manager, **args_value_map)
             success = operator.run(configmap=configmap)
         except Exception as e:
-            logging.exception(f"{self.job_id}.{self.task_name} task start error: {e}")
+            logging.exception(f"execute task {self.job_id}.{self.task_name} fail")
+            errors = str(e)
         finally:
             exec_time = time.time() - self.start_time
-            logging.info(f"{self.job_id}.{self.task_name} finish, success: {success}, exec time: {exec_time}")
-            self.job_manager.update_task(self.task_name, Status.SUCC if success else Status.FAIL)
-            self._clear()
-
-    def _clear(self):
-        self.job_manager.close()
-        self.config_manager.close()
+            logging.info(
+                f"{self.job_id}.{self.task_name} finish, success: {success}, exec time: {exec_time}, errors: {errors}")
+            try:
+                job_manager.update_task(self.task_name, Status.SUCC if success else Status.FAIL, errors=errors)
+            except Exception:
+                logging.exception(f"update task status fail")
 
     def _load_class(self):
         module = importlib.import_module(self.class_path)
         my_class = getattr(module, self.class_name)
         return my_class
 
-    def _parse_configmap(self) -> Dict:
-        job_context: Dict = self.config_manager.job_context.get_all()
+    def _parse_configmap(self, config_manager) -> Dict:
+        job_context: Dict = config_manager.job_context.get_all()
         join_parties = set(job_context.keys())
         join_parties.remove("common")
 
@@ -93,7 +90,7 @@ class TaskExecutor:
     def _validated_params(self, params: Dict):
         return traverse_and_validate(params, safe_workdir=settings.SAFE_WORK_DIR)
 
-    def _parse_args(self) -> Dict:
+    def _parse_args(self, config_manager) -> Dict:
         parsed_args = {}
         for args_key, args_value in self.args.items():
             if isinstance(args_value, str):
@@ -101,11 +98,11 @@ class TaskExecutor:
                     # args_value in the form "${job_context.a.b.c}"
                     real_key: str = re.findall(r'\${(.*?)}', args_value)[0]
                     if real_key.startswith("job_context."):
-                        args_value = self.config_manager.job_context.get(real_key[len("job_context."):])
+                        args_value = config_manager.job_context.get(real_key[len("job_context."):])
                     elif real_key.startswith("mission_context."):
-                        args_value = self.config_manager.mission_context.get(real_key[len("mission_context."):])
+                        args_value = config_manager.mission_context.get(real_key[len("mission_context."):])
                     elif real_key.startswith("global_config."):
-                        args_value = self.config_manager.global_config.get(real_key[len("global_config."):])
+                        args_value = config_manager.global_config.get(real_key[len("global_config."):])
                     else:
                         raise Exception("no real args key context find")
             parsed_args[args_key] = args_value

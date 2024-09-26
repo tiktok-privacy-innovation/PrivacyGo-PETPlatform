@@ -17,6 +17,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 class BigIntOrInteger(TypeDecorator):
     impl = BigInteger
+    cache_ok = True
 
     def load_dialect_impl(self, dialect):
         if dialect.name == 'sqlite':

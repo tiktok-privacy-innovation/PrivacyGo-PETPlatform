@@ -14,7 +14,7 @@
 import unittest
 
 from job_manager.dag import LogicTask
-from task_executor.core import TaskExecutor
+from job_manager.task import TaskExecutor
 from constants import Status
 
 
