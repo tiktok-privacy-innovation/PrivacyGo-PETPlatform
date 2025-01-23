@@ -1,3 +1,4 @@
+.codebase/
 .dockerignore
 .flake8
 .git/

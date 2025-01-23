@@ -23,3 +23,9 @@
 ### Fixed
 
 - Resolved a previous issue that could potentially lead to database connection timeouts, thereby enhancing system reliability.
+
+## Version 0.2.0
+
+### Added
+
+- Launched support for PETSQL bigdata computing. See [bigdata support feature](docs/bigdata_support.md) for more details.

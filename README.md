@@ -2,7 +2,7 @@
 
 PrivacyGo-PETPlatform provides users with a one-stop solution builder for integrating privacy enhancing technologies on a large data scale, which offers distributed task management and modular implementation. The whole system consists of four key submodules:
 
-- [**PETPlatform**](https://github.com/tiktok-privacy-innovation/PETPlatform): PETPlatform serves as the main repository of the project, and is also a service for job management and scheduling.
+- [**PETPlatform**](https://github.com/tiktok-privacy-innovation/PrivacyGo-PETPlatform): PETPlatform serves as the main repository of the project, and is also a service for job management and scheduling.
 It is responsible for coordinating and overseeing the operation of the other three submodules.
 
 - [**PETML**](https://github.com/tiktok-privacy-innovation/PETML): PETML is a machine learning framework based on multi-party computation and federated learning.
