@@ -31,7 +31,8 @@ if __name__ == '__main__':
     # jwt_secret = generate_secret()
     # print(jwt_secret)
 
-    secret = os.environ.get('secret')
+    secret = os.environ['SECRET']
+    print(f"The secret is: {secret}")
     print(generate_token(secret, {'name': 'test_account_1'}))
     print(generate_token(secret, {'name': 'cn_node_1'}))
     print(generate_token(secret, {'name': 'va_node_1'}))
