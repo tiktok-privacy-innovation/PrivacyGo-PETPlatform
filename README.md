@@ -193,8 +193,9 @@ curl -X POST \
 
 #### cURLコマンド例
 ```bash
+JWT_TOKEN=＜python3 src/initialize_jwt.pyで生成したJWTトークン＞
 curl -X POST \
-    -H "Authorization: Bearer <JWT_TOKEN>" \
+    -H "Authorization: Bearer $JWT_TOKEN" \
     -H "Content-Type: application/json" \
     -d @sql_job.json \
     http://localhost:1234/api/v1/jobs
