@@ -1,0 +1,29 @@
+{
+    "name": "PrivacyGo-PETPlatform",
+    "dockerFile": "../docker/Dockerfile",
+    "context": "..",
+    "settings": {
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.linting.pylintEnabled": true,
+        "python.linting.enabled": true
+    },
+    "extensions": [
+        "ms-python.python"
+    ],
+    "forwardPorts": [
+        1234
+    ],
+    // "postCreateCommand": "pip install -r requirements.txt && pip install -r PETSQL/requirements.txt && pip install -r PETML/requirements.txt && python PETSQL/setup.py install && python PETML/setup.py install",
+    "remoteUser": "petplatformuser",
+    "containerEnv": {
+        "TZ": "Asia/Tokyo",
+        "PARTY": "party_a",
+        "SECRET": "a-very-secret-key"
+    },
+    "mounts": [
+        "source=${localWorkspaceFolder}/docker/db,target=/app/db,type=bind",
+        "source=${localWorkspaceFolder}/docker/data,target=/app/data,type=bind",
+        "source=${localWorkspaceFolder}/docker/logs,target=/app/logs,type=bind",
+        "source=${localWorkspaceFolder}/docker/party.json,target=/app/parties/party.json,type=bind"
+    ]
+}

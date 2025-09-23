@@ -32,7 +32,7 @@ LOGGING_CONFIG = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'petplatform.log' if platform.system().lower() == "darwin" else '/app/logs/petplatform.log',
+            'filename': 'petplatform.log' if platform.system().lower() == "darwin" else '../docker/logs/petplatform.log',
             'formatter': 'default'
         }
     },

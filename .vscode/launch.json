@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "gunicorn",
+            "args": [
+                "app:app",
+                "--workers", "4",
+                "--bind", "0.0.0.0:1234",
+                "--timeout", "60",
+                "--graceful-timeout", "10"
+            ],
+            "cwd": "${workspaceFolder}/src",
+            "env": {
+                "FLASK_APP": "app.py",
+                "FLASK_ENV": "development",
+                "TZ": "Asia/Tokyo",
+                "PARTY": "party_a",
+                "SECRET": "a-very-secret-key"
+            },
+            "justMyCode": false,
+            "console": "integratedTerminal"
+        }
+    ]
+}
