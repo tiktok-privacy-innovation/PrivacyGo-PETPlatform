@@ -1,7 +1,7 @@
 FROM python:3.9-bullseye
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl zip unzip ca-certificates-java openjdk-11-jre-headless maven && \
+    apt-get install -y --no-install-recommends curl zip unzip ca-certificates-java openjdk-11-jre-headless maven sqlite3 && \
     rm -rf /var/lib/apt/lists/* && \
     curl -s "https://get.sdkman.io" | bash && \
     bash -c "source /root/.sdkman/bin/sdkman-init.sh && sdk install java 8.0.392-tem"
