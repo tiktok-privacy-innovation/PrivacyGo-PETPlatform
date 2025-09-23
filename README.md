@@ -15,16 +15,20 @@ git clone https://github.com/tiktok-privacy-innovation/PETML .
 
 ## セットアップ手順（fork版）
 
-1. 必要なPythonパッケージのインストール
-    ```bash
-    pip install -r requirements.txt
-    ```
-2. セットアップスクリプトの実行
+### 前提
+
+以下の環境で構築しています。
+
+- Windows11
+- WSL2 Ubuntu24.04
+- VsCode + DevContainers
+
+1. Dockerでとりあえず動かす場合
     ```bash
     bash build.sh
     ```
-3. VSCodeで開発する場合
-    - `.vscode/launch.json` などの設定を利用してデバッグ実行が可能です。
+1. VSCodeで開発する場合
+    - DevContainersでDocker開発環境を起動し、F5でAPサーバー起動
 
 ## オリジナルREADMEについて
 
