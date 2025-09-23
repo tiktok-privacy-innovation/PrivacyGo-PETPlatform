@@ -142,13 +142,14 @@ git clone https://github.com/tiktok-privacy-innovation/PETML .
 
 #### cURLコマンド例
 ```bash
+JWT_TOKEN=＜python3 src/initialize_jwt.pyで生成したJWTトークン＞
 curl -X POST \
-    -H "Authorization: Bearer <JWT_TOKEN>" \
+    -H "Authorization: Bearer $JWT_TOKEN" \
     -H "Content-Type: application/json" \
-    -d @psi_job.json \
+    -d @./data/psi_job.json \
     http://localhost:1234/api/v1/jobs
 ```
-※ `psi_job.json` に上記JSONを保存し、<JWT_TOKEN> を自身のトークンに置き換えてください。
+※ `./data/psi_job.json` に上記JSONを保存し、<JWT_TOKEN> を自身のトークンに置き換えてください。
 
 #### 入力CSVファイル例
 
@@ -201,10 +202,10 @@ JWT_TOKEN=＜python3 src/initialize_jwt.pyで生成したJWTトークン＞
 curl -X POST \
     -H "Authorization: Bearer $JWT_TOKEN" \
     -H "Content-Type: application/json" \
-    -d @sql_job.json \
+    -d @./data/sql_job.json \
     http://localhost:1234/api/v1/jobs
 ```
-※ `sql_job.json` に上記JSONを保存し、<JWT_TOKEN> を自身のトークンに置き換えてください。
+※ `./data/sql_job.json` に上記JSONを保存し、<JWT_TOKEN> を自身のトークンに置き換えてください。
 
 #### 入力CSVファイル例
 
