@@ -1,22 +1,28 @@
 {
   "party_a": {
+    "address": "http://localhost:1234",
     "petplatform": {
       "type": 1,
-      "url":"http://${ip_address_a}:1234"
+      "url": "http://localhost:1234"
     },
-    "petnet": [{
-      "type": 1,
-      "url":"${ip_address_a}:1235"
-    }]
+    "petnet": [
+      {
+        "type": 1,
+        "url": "localhost:1235"
+      }
+    ]
   },
   "party_b": {
+    "address": "http://localhost:1234",
     "petplatform": {
       "type": 1,
-      "url":"http://${ip_address_b}:1234"
+      "url": "http://localhost:1234"
     },
-    "petnet": [{
-      "type": 1,
-      "url":"${ip_address_b}:1235"
-    }]
+    "petnet": [
+      {
+        "type": 1,
+        "url": "localhost:1235"
+      }
+    ]
   }
 }
