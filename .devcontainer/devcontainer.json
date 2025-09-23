@@ -1,0 +1,25 @@
+{
+    "name": "PrivacyGo-PETPlatform",
+    "dockerFile": "../docker/Dockerfile",
+    "context": "..",
+    "extensions": [
+        "ms-python.python",
+        "google.geminicodeassist"
+    ],
+    "forwardPorts": [
+        1234
+    ],
+    "postCreateCommand": "python src/initialize_database.py",
+    "remoteUser": "petplatformuser",
+    "containerEnv": {
+        "TZ": "Asia/Tokyo",
+        "PARTY": "party_a",
+        "SECRET": "a-very-secret-key"
+    },
+    "mounts": [
+        "source=${localWorkspaceFolder}/docker/db,target=/app/db,type=bind",
+        "source=${localWorkspaceFolder}/docker/data,target=/app/data,type=bind",
+        "source=${localWorkspaceFolder}/docker/logs,target=/app/logs,type=bind",
+        "source=${localWorkspaceFolder}/docker/party.json,target=/app/parties/party.json,type=bind",
+    ]
+}
