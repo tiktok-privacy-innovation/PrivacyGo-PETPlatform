@@ -1,0 +1,11 @@
+{
+    "mission_name": "psi",
+    "mission_version": "latest",
+    "main_party": "party_a",
+    "mission_params": {
+        "input_path": "/data/purchase.csv",
+        "partner_input_path": "/data/exposure.csv",
+        "output_path": "/data/psi_result.csv",
+        "id_column": "user_id"
+    }
+}

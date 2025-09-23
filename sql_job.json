@@ -1,0 +1,11 @@
+{
+    "mission_name": "sql",
+    "mission_version": "latest",
+    "main_party": "party_a",
+    "mission_params": {
+        "sql": "SELECT a.user_id, a.amount, b.ad_id FROM a INNER JOIN b ON a.user_id = b.user_id",
+        "input_path_a": "/data/purchase.csv",
+        "input_path_b": "/data/exposure.csv",
+        "output_path": "/data/joined_result.csv"
+    }
+}
